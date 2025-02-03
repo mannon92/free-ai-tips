@@ -1,5 +1,5 @@
 # BUSINESS SCIENCE GENERATIVE AI/ML TIPS ----
-# AI-TIP 012 | 5 Ways To Load Data, Search Files and Explore Data Structures with AI ----
+# AI-TIP 012 | 5 Ways To Load CSV Files with AI ----
 
 # WHAT WE COVER TODAY: 
 # 1. Expose you to my new AI Data Science Team of Copilots
