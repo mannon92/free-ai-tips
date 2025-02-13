@@ -57,7 +57,8 @@ exploratory_agent.invoke_agent(
     data_raw=df,
 )
 exploratory_agent.get_ai_message(markdown=True)
-exploratory_agent.get_artifacts(as_dataframe=True)
+exploratory_agent.get_artifacts().keys()
+pd.DataFrame(exploratory_agent.get_artifacts()['describe_df'])
 
 # Example 4: Visualize missing data in the dataset.
 #  * Note - Requires missingno
