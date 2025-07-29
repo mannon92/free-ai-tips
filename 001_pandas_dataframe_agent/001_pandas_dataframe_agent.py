@@ -20,12 +20,12 @@ import pandas as pd
 
 # SETUP PATHS
 
-PATH_ROOT = '001_pandas_dataframe_agent'
+# Determine the directory where this script lives so paths work
+PATH_ROOT = Path(__file__).resolve().parent
 
 # Add the directory to the system path if not already present
-current_dir = Path.cwd() / PATH_ROOT
-if str(current_dir) not in sys.path:
-    sys.path.append(str(current_dir))
+if str(PATH_ROOT) not in sys.path:
+    sys.path.append(str(PATH_ROOT))
     
 # Import from utils.parsers module
 from utils.parsers import parse_json_to_dataframe
@@ -35,9 +35,19 @@ from utils.parsers import parse_json_to_dataframe
 # OPENAI SETUP
 model = 'gpt-4o-mini'
 
-# Set your OpenAI API key
-# os.environ['OPENAI_API_KEY'] = 'your-api-key-here'
-os.environ['OPENAI_API_KEY'] = yaml.safe_load(open('../credentials.yml'))['openai']
+# Set your OpenAI API key. The key can be provided via the environment
+# variable ``OPENAI_API_KEY`` or via a ``credentials.yml`` file located one
+# directory above this script with the structure ``{'openai': 'KEY'}``.
+api_key = os.getenv("OPENAI_API_KEY")
+if api_key is None:
+    cred_path = PATH_ROOT.parent / "credentials.yml"
+    if cred_path.exists():
+        api_key = yaml.safe_load(open(cred_path))['openai']
+    else:
+        raise EnvironmentError(
+            "OPENAI_API_KEY environment variable not set and credentials.yml not found"
+        )
+os.environ['OPENAI_API_KEY'] = api_key
 
 # 2.0 CREATE THE DATA ANALYSIS AGENT ----
 #  - Load a CSV file of your data
@@ -47,8 +57,7 @@ os.environ['OPENAI_API_KEY'] = yaml.safe_load(open('../credentials.yml'))['opena
 #  - Parse the JSON
 
 # Load your dataset
-df = pd.read_csv(PATH_ROOT + '/data/customer_data.csv')
-df
+df = pd.read_csv(PATH_ROOT / 'data' / 'customer_data.csv')
 
 # Initialize the LLM
 llm = ChatOpenAI(
@@ -58,18 +67,16 @@ llm = ChatOpenAI(
 
 # Create an agent that can interact with the Pandas DataFrame
 data_analysis_agent = create_pandas_dataframe_agent(
-    llm, 
-    df, 
+    llm,
+    df,
     agent_type=AgentType.OPENAI_FUNCTIONS,
     suffix = "Always return a JSON dictionary that can be parsed into a data frame containing the requested information.",
     verbose=True,
     allow_dangerous_code=True
 )
-data_analysis_agent
 
 # Run the agent
 response = data_analysis_agent.invoke("What are the total sales by geography?")
-response
 
 pprint(response['output'])
 
@@ -82,7 +89,7 @@ response_df = parse_json_to_dataframe(response['output'])
 import plotly.express as px
 
 fig = px.bar(response_df, x='Geography', y='Sales', title='Sales by Geography')
-fig
+fig.show()
 
 
 # 5.0 WANT TO LEARN HOW TO USE GENERATIVE AI AND LLMS FOR DATA SCIENCE? ----
@@ -98,3 +105,4 @@ fig
 #       -   Week 8: AI App Deployment With AWS Cloud (Docker, EC2, NGINX)
 # 
 # Enroll here: https://learn.business-science.io/generative-ai-bootcamp-enroll
+
